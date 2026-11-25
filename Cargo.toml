@@ -1,0 +1,8 @@
+[package]
+name = "rust-sweeper"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+rand = "0.10.4"
+gpui-kit = "0.11.0"
