@@ -16,10 +16,31 @@ use gpui_kit::component::{
 };
 use gpui_kit::*;
 
-struct HelloWorld;
+struct HelloWorld {
+    count: u32,
+}
 
 impl Render for HelloWorld {
-    fn render(&mut self, _: &mut Window, _: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let mut grid = div().flex().flex_col().gap_2();
+
+        for y in 0..5usize {
+            let mut row = div().flex().gap_2();
+
+            for x in 0..5usize {
+                let button = Button::new(("cell", y * 5 + x))
+                    .primary()
+                    .label(format!("{x},{y}"))
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.count += 1;
+                        cx.notify();
+                    }));
+                row = row.child(button);
+            }
+
+            grid = grid.child(row);
+        }
+
         div()
             .flex()
             .flex_col()
@@ -27,25 +48,18 @@ impl Render for HelloWorld {
             .items_center()
             .justify_center()
             .gap_2()
-            .child(Label::new("Hello, World!"))
-            .child(
-                Button::new("hello")
-                    .primary()
-                    .label("Click me")
-                    .on_click(|_, _, _| println!("Clicked!")),
-            )
+            .child(Label::new(format!("Clicked {} times", self.count)))
+            .child(grid)
     }
 }
 
 fn main() {
-    application()
-        .with_assets(assets::Assets)
-        .run(|cx| {
-            init(cx);
+    application().with_assets(assets::Assets).run(|cx| {
+        init(cx);
 
-            open_window(WindowOptions::default(), cx, |_, cx| {
-                cx.new(|_| HelloWorld)
-            })
-            .expect("Failed to open window");
-        });
+        open_window(WindowOptions::default(), cx, |_, cx| {
+            cx.new(|_| HelloWorld { count: 0 })
+        })
+        .expect("Failed to open window");
+    });
 }
