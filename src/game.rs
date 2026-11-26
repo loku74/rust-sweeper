@@ -20,6 +20,11 @@ impl Game {
         self.map.height()
     }
 
+    /// Signed: if the player places more flags than there are mines.
+    pub fn mines_left(&self) -> isize {
+        self.map.mines() as isize - self.map.flags_placed() as isize
+    }
+
     pub fn tile(&self, x: usize, y: usize) -> Tile {
         self.map.tile(x, y)
     }

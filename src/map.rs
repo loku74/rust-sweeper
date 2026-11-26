@@ -53,6 +53,18 @@ impl Map {
         self.difficulty.dimensions().1
     }
 
+    pub fn mines(&self) -> usize {
+        self.difficulty.mines()
+    }
+
+    pub fn flags_placed(&self) -> usize {
+        self.tiles
+            .iter()
+            .flatten()
+            .filter(|tile| tile.state == CellState::Flagged)
+            .count()
+    }
+
     /// Places the mines anywhere except the 3x3 square around `(first_x, first_y)`,
     /// then computes every empty cell's neighbour count.
     /// Only touches `cell`, so flags placed before the first reveal are kept.

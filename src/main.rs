@@ -63,6 +63,17 @@ fn cell(id: usize, tile: Tile) -> base::Button {
 
 impl Render for Game {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let container = div()
+            .flex()
+            .flex_col()
+            .size_full()
+            .items_center()
+            .justify_center();
+
+        let layout = div().flex().flex_col().gap_4();
+
+        let bar = div().flex().gap_8().child(self.mines_left().to_string());
+
         let mut grid = div()
             .flex()
             .flex_col()
@@ -92,13 +103,7 @@ impl Render for Game {
             grid = grid.child(row);
         }
 
-        div()
-            .flex()
-            .flex_col()
-            .size_full()
-            .items_center()
-            .justify_center()
-            .child(grid)
+        container.child(layout.child(bar).child(grid))
     }
 }
 
@@ -107,7 +112,7 @@ fn main() {
         init(cx);
 
         open_window(WindowOptions::default(), cx, |_, cx| {
-            let game = Game::new(Difficulty::Beginner);
+            let game = Game::new(Difficulty::Intermediate);
 
             cx.new(|_| game)
         })
