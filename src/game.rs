@@ -1,36 +1,34 @@
-use crate::map::{CellState, Map, Tile};
+use crate::map::{Map, Tile};
 use crate::settings::Difficulty;
 
 pub struct Game {
-    difficulty: Difficulty,
-    /// `None` until the first reveal: mines are placed around the first click
-    /// so the player never loses on their first move.
-    map: Option<Map>,
+    map: Map,
 }
 
 impl Game {
     pub fn new(difficulty: Difficulty) -> Self {
         Self {
-            difficulty,
-            map: None,
+            map: Map::new(difficulty),
         }
     }
 
     pub fn width(&self) -> usize {
-        self.difficulty.dimensions().0
+        self.map.width()
     }
 
     pub fn height(&self) -> usize {
-        self.difficulty.dimensions().1
+        self.map.height()
     }
 
-    pub fn tile(&self, x: usize, y: usize) -> Option<Tile> {
-        self.map.as_ref().map(|map| map.tile(x, y))
+    pub fn tile(&self, x: usize, y: usize) -> Tile {
+        self.map.tile(x, y)
     }
 
     pub fn reveal(&mut self, x: usize, y: usize) {
-        self.map
-            .get_or_insert_with(|| Map::new(self.difficulty, x, y))
-            .reveal(x, y);
+        self.map.reveal(x, y);
+    }
+
+    pub fn toggle_flag(&mut self, x: usize, y: usize) {
+        self.map.toggle_flag(x, y);
     }
 }

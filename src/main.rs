@@ -29,19 +29,17 @@ fn number_color(n: usize) -> Rgba {
     }
 }
 
-fn cell(id: usize, tile: Option<Tile>) -> base::Button {
-    let revealed = tile.is_some_and(|tile| tile.state == CellState::Revealed);
+fn cell(id: usize, tile: Tile) -> base::Button {
+    let revealed = tile.state == CellState::Revealed;
 
-    let (label, color) = match tile {
-        None => (String::new(), None),
-        Some(tile) => match (tile.state, tile.cell) {
-            (CellState::Revealed, Cell::Empty(0)) => (String::new(), None),
-            (CellState::Revealed, Cell::Empty(n)) => (n.to_string(), Some(number_color(n))),
-            (CellState::Revealed, Cell::Mine) => ("*".into(), None),
-            (CellState::Flagged, _) => ("F".into(), None),
-            (CellState::Marked, _) => ("?".into(), None),
-            (CellState::Hidden, _) => (String::new(), None),
-        },
+    // `color` is `None` when the text should keep the default colour.
+    let (label, color) = match (tile.state, tile.cell) {
+        (CellState::Revealed, Cell::Empty(0)) => (String::new(), None),
+        (CellState::Revealed, Cell::Empty(n)) => (n.to_string(), Some(number_color(n))),
+        (CellState::Revealed, Cell::Mine) => ("*".into(), None),
+        (CellState::Flagged, _) => ("F".into(), None),
+        (CellState::Marked, _) => ("?".into(), None),
+        (CellState::Hidden, _) => (String::new(), None),
     };
 
     base::Button::new(("cell", id))
@@ -79,10 +77,18 @@ impl Render for Game {
 
             for x in 0..self.width() {
                 let id = y * self.width() + x;
-                let button =
-                    cell(id, self.tile(x, y)).on_click(cx.listener(move |this, _, _, cx| {
+                let button = cell(id, self.tile(x, y))
+                    // `on_click` only fires for the left button...
+                    .on_click(cx.listener(move |this, _, _, cx| {
                         this.reveal(x, y);
                         cx.notify();
+                    }))
+                    // ...other buttons (right, middle) go to `on_aux_click`.
+                    .on_aux_click(cx.listener(move |this, event: &ClickEvent, _, cx| {
+                        if event.is_right_click() {
+                            this.toggle_flag(x, y);
+                            cx.notify();
+                        }
                     }));
                 row = row.child(button);
             }
