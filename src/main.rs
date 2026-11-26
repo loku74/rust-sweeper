@@ -44,21 +44,21 @@ fn cell(id: usize, tile: Tile) -> base::Button {
     base::Button::new(("cell", id))
         .group("cell")
         .relative()
+        .cursor_pointer()
         .size_8()
         .border_b_1()
         .border_r_1()
         .border_color(rgb(CELL_BORDER_COLOR))
         .when(revealed, |this| this.bg(rgb(CELL_REVEALED_BG_COLOR)))
-        .when(!revealed, |this| {
-            this.bg(rgb(CELL_HIDDEN_BG_COLOR)).cursor_pointer().child(
-                div()
-                    .absolute()
-                    .inset_0()
-                    .group_hover("cell", |style| style.bg(white().opacity(0.2))),
-            )
-        })
+        .when(!revealed, |this| this.bg(rgb(CELL_HIDDEN_BG_COLOR)))
         .when_some(color, |this, color| this.text_color(color))
         .child(label)
+        .child(
+            div()
+                .absolute()
+                .inset_0()
+                .group_hover("cell", |style| style.bg(white().opacity(0.2))),
+        )
 }
 
 impl Render for Game {
