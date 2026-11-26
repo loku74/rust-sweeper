@@ -86,8 +86,19 @@ impl Map {
         self.tiles[y][x]
     }
 
+    /// What the player's left-click does, depending on the tile's state.
     pub fn reveal(&mut self, x: usize, y: usize) {
-        // Only hidden cells can be revealed: flagged/marked ones are protected.
+        match self.tiles[y][x].state {
+            CellState::Hidden => self.open(x, y),
+            CellState::Revealed => self.chord(x, y),
+            // Flagged/marked tiles are protected.
+            CellState::Flagged | CellState::Marked => {}
+        }
+    }
+
+    /// Reveals a hidden tile; an `Empty(0)` spreads to its neighbours.
+    /// Only ever touches hidden tiles, which is what stops the recursion.
+    fn open(&mut self, x: usize, y: usize) {
         if self.tiles[y][x].state != CellState::Hidden {
             return;
         }
@@ -102,7 +113,27 @@ impl Map {
         if tile.cell == Cell::Empty(0) {
             let around: Vec<_> = neighbors(&self.tiles, x, y).collect();
             for (nx, ny) in around {
-                self.reveal(nx, ny);
+                self.open(nx, ny);
+            }
+        }
+    }
+
+    /// Clicking a revealed number whose neighbouring flags match that number
+    /// opens all its other hidden neighbours.
+    fn chord(&mut self, x: usize, y: usize) {
+        let Cell::Empty(n) = self.tiles[y][x].cell else {
+            return;
+        };
+
+        let around: Vec<_> = neighbors(&self.tiles, x, y).collect();
+        let flags = around
+            .iter()
+            .filter(|&&(nx, ny)| self.tiles[ny][nx].state == CellState::Flagged)
+            .count();
+
+        if flags == n {
+            for (nx, ny) in around {
+                self.open(nx, ny);
             }
         }
     }
@@ -160,5 +191,42 @@ mod tests {
         map.reveal(5, 5);
 
         assert_eq!(map.tile(0, 0).state, CellState::Flagged);
+    }
+
+    #[test]
+    fn chord_opens_neighbours_when_flags_match() {
+        let mut map = Map::new(Difficulty::Expert);
+        map.reveal(5, 5);
+
+        // Find a revealed number that still has hidden neighbours.
+        let (x, y) = (0..map.height())
+            .flat_map(|y| (0..map.width()).map(move |x| (x, y)))
+            .find(|&(x, y)| {
+                let tile = map.tile(x, y);
+                tile.state == CellState::Revealed
+                    && tile.cell != Cell::Empty(0)
+                    && neighbors(&map.tiles, x, y)
+                        .any(|(nx, ny)| map.tile(nx, ny).state == CellState::Hidden)
+            })
+            .expect("the first reveal always opens at least one number");
+
+        // Flag exactly the neighbouring mines, then chord.
+        let around: Vec<_> = neighbors(&map.tiles, x, y).collect();
+        for &(nx, ny) in &around {
+            if map.tile(nx, ny).cell == Cell::Mine {
+                map.toggle_flag(nx, ny);
+            }
+        }
+        map.reveal(x, y);
+
+        for (nx, ny) in around {
+            let tile = map.tile(nx, ny);
+            let expected = if tile.cell == Cell::Mine {
+                CellState::Flagged
+            } else {
+                CellState::Revealed
+            };
+            assert_eq!(tile.state, expected);
+        }
     }
 }

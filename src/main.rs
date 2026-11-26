@@ -48,7 +48,6 @@ fn cell(id: usize, tile: Tile) -> base::Button {
         .border_b_1()
         .border_r_1()
         .border_color(rgb(CELL_BORDER_COLOR))
-        .disabled(revealed)
         .when(revealed, |this| this.bg(rgb(CELL_REVEALED_BG_COLOR)))
         .when(!revealed, |this| {
             this.bg(rgb(CELL_HIDDEN_BG_COLOR)).cursor_pointer().child(
