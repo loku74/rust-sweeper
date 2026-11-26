@@ -96,7 +96,15 @@ impl Map {
             self.place_mines(x, y);
         }
 
-        self.tiles[y][x].state = CellState::Revealed;
+        let tile = &mut self.tiles[y][x];
+        tile.state = CellState::Revealed;
+
+        if tile.cell == Cell::Empty(0) {
+            let around: Vec<_> = neighbors(&self.tiles, x, y).collect();
+            for (nx, ny) in around {
+                self.reveal(nx, ny);
+            }
+        }
     }
 
     pub fn toggle_flag(&mut self, x: usize, y: usize) {

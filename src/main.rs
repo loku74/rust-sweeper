@@ -32,7 +32,6 @@ fn number_color(n: usize) -> Rgba {
 fn cell(id: usize, tile: Tile) -> base::Button {
     let revealed = tile.state == CellState::Revealed;
 
-    // `color` is `None` when the text should keep the default colour.
     let (label, color) = match (tile.state, tile.cell) {
         (CellState::Revealed, Cell::Empty(0)) => (String::new(), None),
         (CellState::Revealed, Cell::Empty(n)) => (n.to_string(), Some(number_color(n))),
@@ -78,12 +77,10 @@ impl Render for Game {
             for x in 0..self.width() {
                 let id = y * self.width() + x;
                 let button = cell(id, self.tile(x, y))
-                    // `on_click` only fires for the left button...
                     .on_click(cx.listener(move |this, _, _, cx| {
                         this.reveal(x, y);
                         cx.notify();
                     }))
-                    // ...other buttons (right, middle) go to `on_aux_click`.
                     .on_aux_click(cx.listener(move |this, event: &ClickEvent, _, cx| {
                         if event.is_right_click() {
                             this.toggle_flag(x, y);
