@@ -1,4 +1,4 @@
-use crate::map::{Map, Tile};
+use crate::map::{CellState, Map, Tile};
 use crate::settings::Difficulty;
 
 pub struct Game {
@@ -23,11 +23,18 @@ impl Game {
         self.pressed = None;
     }
 
-    /// Whether `(x, y)` is in the 3x3 square around the pressed tile,
+    /// Whether `(x, y)` should be drawn as "pushed in" while the button is held.
+    /// Pressing a revealed number previews its whole 3x3 square (a chord);
+    /// pressing a hidden tile only pushes in that one tile.
     pub fn is_pressed(&self, x: usize, y: usize) -> bool {
-        match self.pressed {
-            Some((px, py)) => x.abs_diff(px) <= 1 && y.abs_diff(py) <= 1,
-            None => false,
+        let Some((px, py)) = self.pressed else {
+            return false;
+        };
+
+        if self.map.tile(px, py).state == CellState::Revealed {
+            x.abs_diff(px) <= 1 && y.abs_diff(py) <= 1
+        } else {
+            (x, y) == (px, py)
         }
     }
 
