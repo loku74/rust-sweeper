@@ -29,8 +29,10 @@ fn number_color(n: usize) -> Rgba {
     }
 }
 
-fn cell(id: usize, tile: Tile) -> base::Button {
-    let revealed = tile.state == CellState::Revealed;
+fn cell(id: usize, tile: Tile, pressed: bool) -> base::Button {
+    // A hidden tile under a held mouse button is drawn like an opened, empty one.
+    let revealed =
+        tile.state == CellState::Revealed || (pressed && tile.state == CellState::Hidden);
 
     let (label, color) = match (tile.state, tile.cell) {
         (CellState::Revealed, Cell::Empty(0)) => (String::new(), None),
@@ -86,7 +88,7 @@ impl Render for Game {
 
             for x in 0..self.width() {
                 let id = y * self.width() + x;
-                let button = cell(id, self.tile(x, y))
+                let button = cell(id, self.tile(x, y), self.is_pressed(x, y))
                     .on_click(cx.listener(move |this, _, _, cx| {
                         this.reveal(x, y);
                         cx.notify();
@@ -96,12 +98,31 @@ impl Render for Game {
                             this.toggle_flag(x, y);
                             cx.notify();
                         }
-                    }));
+                    }))
+                    .on_mouse_down(
+                        MouseButton::Left,
+                        cx.listener(move |this, _, _, cx| {
+                            this.press(x, y);
+                            cx.notify();
+                        }),
+                    );
                 row = row.child(button);
             }
 
             grid = grid.child(row);
         }
+
+        // Release is handled once on the whole grid rather than on each cell:
+        // `on_mouse_up` covers releasing over the grid, `on_mouse_up_out`
+        // covers dragging off it first, so the preview can never get stuck.
+        let release =
+            |this: &mut Game, _: &MouseUpEvent, _: &mut Window, cx: &mut Context<Game>| {
+                this.release();
+                cx.notify();
+            };
+        let grid = grid
+            .on_mouse_up(MouseButton::Left, cx.listener(release))
+            .on_mouse_up_out(MouseButton::Left, cx.listener(release));
 
         container.child(layout.child(bar).child(grid))
     }

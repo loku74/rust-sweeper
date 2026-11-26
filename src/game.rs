@@ -3,12 +3,31 @@ use crate::settings::Difficulty;
 
 pub struct Game {
     map: Map,
+    /// The tile the left mouse button is held down on, if any.
+    pressed: Option<(usize, usize)>,
 }
 
 impl Game {
     pub fn new(difficulty: Difficulty) -> Self {
         Self {
             map: Map::new(difficulty),
+            pressed: None,
+        }
+    }
+
+    pub fn press(&mut self, x: usize, y: usize) {
+        self.pressed = Some((x, y));
+    }
+
+    pub fn release(&mut self) {
+        self.pressed = None;
+    }
+
+    /// Whether `(x, y)` is in the 3x3 square around the pressed tile,
+    pub fn is_pressed(&self, x: usize, y: usize) -> bool {
+        match self.pressed {
+            Some((px, py)) => x.abs_diff(px) <= 1 && y.abs_diff(py) <= 1,
+            None => false,
         }
     }
 
