@@ -1,4 +1,4 @@
-use crate::map::{CellState, Map};
+use crate::map::{CellState, Map, Tile};
 use crate::settings::Difficulty;
 
 pub struct Game {
@@ -24,26 +24,13 @@ impl Game {
         self.difficulty.dimensions().1
     }
 
-    /// Before the first click there is no map yet, so every cell is hidden.
-    pub fn state(&self, x: usize, y: usize) -> CellState {
-        self.map
-            .as_ref()
-            .map_or(CellState::Hidden, |map| map.tile(x, y).state)
+    pub fn tile(&self, x: usize, y: usize) -> Option<Tile> {
+        self.map.as_ref().map(|map| map.tile(x, y))
     }
 
     pub fn reveal(&mut self, x: usize, y: usize) {
-        // Create the map on the first reveal, then reveal on it.
         self.map
             .get_or_insert_with(|| Map::new(self.difficulty, x, y))
             .reveal(x, y);
-    }
-
-    pub fn print_map(&self) {
-        if let Some(map) = &self.map {
-            for row in map.tiles() {
-                let cells: Vec<_> = row.iter().map(|tile| tile.cell).collect();
-                println!("{cells:?}");
-            }
-        }
     }
 }

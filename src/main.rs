@@ -14,8 +14,35 @@ const CELL_REVEALED_BG_COLOR: u32 = 0xc5c5c5;
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
-fn cell(id: usize, state: CellState) -> base::Button {
-    let revealed = state == CellState::Revealed;
+use crate::map::{Cell, Tile};
+
+fn number_color(n: usize) -> Rgba {
+    match n {
+        1 => rgb(0x2563eb), // blue
+        2 => rgb(0x16a34a), // green
+        3 => rgb(0xdc2626), // red
+        4 => rgb(0x7c3aed), // purple
+        5 => rgb(0xb45309), // brown
+        6 => rgb(0x0891b2), // teal
+        7 => rgb(0x111111), // near-black
+        _ => rgb(0x6b7280), // 8: grey
+    }
+}
+
+fn cell(id: usize, tile: Option<Tile>) -> base::Button {
+    let revealed = tile.is_some_and(|tile| tile.state == CellState::Revealed);
+
+    let (label, color) = match tile {
+        None => (String::new(), None),
+        Some(tile) => match (tile.state, tile.cell) {
+            (CellState::Revealed, Cell::Empty(0)) => (String::new(), None),
+            (CellState::Revealed, Cell::Empty(n)) => (n.to_string(), Some(number_color(n))),
+            (CellState::Revealed, Cell::Mine) => ("*".into(), None),
+            (CellState::Flagged, _) => ("F".into(), None),
+            (CellState::Marked, _) => ("?".into(), None),
+            (CellState::Hidden, _) => (String::new(), None),
+        },
+    };
 
     base::Button::new(("cell", id))
         .group("cell")
@@ -34,6 +61,8 @@ fn cell(id: usize, state: CellState) -> base::Button {
                     .group_hover("cell", |style| style.bg(white().opacity(0.2))),
             )
         })
+        .when_some(color, |this, color| this.text_color(color))
+        .child(label)
 }
 
 impl Render for Game {
@@ -51,7 +80,7 @@ impl Render for Game {
             for x in 0..self.width() {
                 let id = y * self.width() + x;
                 let button =
-                    cell(id, self.state(x, y)).on_click(cx.listener(move |this, _, _, cx| {
+                    cell(id, self.tile(x, y)).on_click(cx.listener(move |this, _, _, cx| {
                         this.reveal(x, y);
                         cx.notify();
                     }));

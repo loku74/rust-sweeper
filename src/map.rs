@@ -1,20 +1,17 @@
 use crate::settings::Difficulty;
 use rand::seq::SliceRandom;
 
-/// What a cell contains.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Cell {
     Empty(usize),
     Mine,
 }
 
-/// What the player has done with a cell.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CellState {
     Hidden,
     Revealed,
     Flagged,
-    /// "?" mark: the player is unsure.
     Marked,
 }
 
@@ -58,10 +55,6 @@ impl Map {
         }
 
         Self { tiles }
-    }
-
-    pub fn tiles(&self) -> &[Vec<Tile>] {
-        &self.tiles
     }
 
     pub fn tile(&self, x: usize, y: usize) -> Tile {
