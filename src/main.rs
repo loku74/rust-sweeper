@@ -53,8 +53,8 @@ fn cell(id: usize, tile: Tile, pressed: bool) -> base::Button {
         .when(revealed, |this| this.bg(rgb(CELL_REVEALED_BG_COLOR)))
         .when(!revealed, |this| this.bg(rgb(CELL_HIDDEN_BG_COLOR)))
         .when_some(color, |this, color| this.text_color(color))
-        .child(label)
         .font_bold()
+        .child(label)
         .child(
             div()
                 .absolute()
@@ -133,7 +133,7 @@ fn main() {
         init(cx);
 
         open_window(WindowOptions::default(), cx, |_, cx| {
-            let game = Game::new(Difficulty::Intermediate);
+            let game = Game::new(Difficulty::Beginner);
 
             cx.new(|_| game)
         })

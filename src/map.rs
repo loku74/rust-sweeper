@@ -241,4 +241,14 @@ mod tests {
             assert_eq!(tile.state, expected);
         }
     }
+
+    #[test]
+    fn flags_placed_counts_only_flags() {
+        let mut map = Map::new(Difficulty::Beginner);
+        map.toggle_flag(0, 0); // Hidden -> Flagged
+        map.toggle_flag(1, 0); // Hidden -> Flagged
+        map.toggle_flag(1, 0); // Flagged -> Marked: no longer a flag
+
+        assert_eq!(map.flags_placed(), 1);
+    }
 }
