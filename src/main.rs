@@ -74,7 +74,27 @@ impl Render for Game {
 
         let layout = div().flex().flex_col().gap_4();
 
-        let bar = div().flex().gap_8().child(self.mines_left().to_string());
+        let mines_left = div().font_semibold().child(self.mines_left().to_string());
+        let difficulty_btn = base::Button::new("difficulty_btn")
+            .p_2()
+            .child(self.difficulty().to_string())
+            .on_click(cx.listener(|this, _, _, cx| {
+                this.set_difficulty(this.difficulty().next());
+                cx.notify();
+            }))
+            .bg(black().opacity(0.05))
+            .text_color(rgba(0x000000b4))
+            .hover(|style| style.bg(black().opacity(0.07)))
+            .cursor_pointer()
+            .border_1()
+            .border_color(rgb(CELL_BORDER_COLOR));
+
+        let bar = div()
+            .flex()
+            .items_center()
+            .gap_8()
+            .child(difficulty_btn)
+            .child(mines_left);
 
         let mut grid = div()
             .flex()

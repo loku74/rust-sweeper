@@ -159,6 +159,10 @@ impl Map {
             CellState::Revealed => {}
         }
     }
+
+    pub fn difficulty(&self) -> Difficulty {
+        self.difficulty
+    }
 }
 
 fn count_adjacent_mines(tiles: &[Vec<Tile>], x: usize, y: usize) -> usize {

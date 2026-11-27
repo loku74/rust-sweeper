@@ -15,6 +15,10 @@ impl Game {
         }
     }
 
+    pub fn set_difficulty(&mut self, difficulty: Difficulty) {
+        *self = Game::new(difficulty)
+    }
+
     pub fn press(&mut self, x: usize, y: usize) {
         self.pressed = Some((x, y));
     }
@@ -61,5 +65,9 @@ impl Game {
 
     pub fn toggle_flag(&mut self, x: usize, y: usize) {
         self.map.toggle_flag(x, y);
+    }
+
+    pub fn difficulty(&self) -> Difficulty {
+        self.map.difficulty()
     }
 }
