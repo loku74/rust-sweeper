@@ -63,6 +63,25 @@ fn cell(id: usize, tile: Tile, pressed: bool) -> base::Button {
         )
 }
 
+/// A small text tooltip.
+struct HelpTooltip(&'static str);
+
+impl Render for HelpTooltip {
+    fn render(&mut self, _: &mut Window, _: &mut Context<Self>) -> impl IntoElement {
+        div()
+            .px_2()
+            .py_1()
+            .border_1()
+            .border_color(rgb(MAP_BORDER_COLOR))
+            .bg(white())
+            .text_color(black().opacity(0.74))
+            .text_xs()
+            .shadow_md()
+            .mt_4()
+            .child(self.0)
+    }
+}
+
 impl Render for Game {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let container = div()
@@ -77,7 +96,6 @@ impl Render for Game {
         let mines_left = div().font_semibold().child(self.mines_left().to_string());
         let difficulty_btn = base::Button::new("difficulty_btn")
             .p_2()
-            .child(self.difficulty().to_string())
             .on_click(cx.listener(|this, _, _, cx| {
                 this.set_difficulty(this.difficulty().next());
                 cx.notify();
@@ -87,7 +105,9 @@ impl Render for Game {
             .hover(|style| style.bg(black().opacity(0.07)))
             .cursor_pointer()
             .border_1()
-            .border_color(rgb(CELL_BORDER_COLOR));
+            .border_color(rgb(CELL_BORDER_COLOR))
+            .tooltip(|_, cx| cx.new(|_| HelpTooltip("Change the difficulty")).into())
+            .child(self.difficulty().to_string());
 
         let bar = div()
             .flex()
