@@ -11,8 +11,8 @@ const CELL_BORDER_COLOR: u32 = MAP_BORDER_COLOR;
 const CELL_HIDDEN_BG_COLOR: u32 = 0xe7e7e7;
 const CELL_REVEALED_BG_COLOR: u32 = 0xc5c5c5;
 
-use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
+use gpui_kit::{base::StyledExt, prelude::FluentBuilder};
 
 use crate::map::{Cell, Tile};
 
@@ -46,7 +46,6 @@ fn cell(id: usize, tile: Tile, pressed: bool) -> base::Button {
     base::Button::new(("cell", id))
         .group("cell")
         .relative()
-        .cursor_pointer()
         .size_8()
         .border_b_1()
         .border_r_1()
@@ -55,6 +54,7 @@ fn cell(id: usize, tile: Tile, pressed: bool) -> base::Button {
         .when(!revealed, |this| this.bg(rgb(CELL_HIDDEN_BG_COLOR)))
         .when_some(color, |this, color| this.text_color(color))
         .child(label)
+        .font_bold()
         .child(
             div()
                 .absolute()
